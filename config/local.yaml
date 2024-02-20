@@ -1,0 +1,14 @@
+env: "local"
+http_server:
+  address: "localhost:8082"
+  timeout: 4s
+  idle_timeout: 30s
+  user: "admin"
+  password: "adminn"
+storage:
+  DBName: "postgres_server"
+  DBUser: "admin"
+  DBPassword: "admin"
+  DBHost: "localhost"
+  DBPort: "5432"
+  storage_path: "./storage/storage.db"

@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"database/sql"
@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	_ "github.com/lib/pq"
+	"vanilla-server/utils"
 )
 
-const apiKey = "186bd86d8ce1b477fbb716010c6199a2"
+const apiKey = "f9f996577eb403333e3a10667f6b862c"
 
 type WeatherData struct {
 	Main struct {
@@ -19,26 +18,7 @@ type WeatherData struct {
 	Name string `json:"name"`
 }
 
-func main() {
-	connectionString := fmt.Sprintln("host=localhost port=5432 user=admin password=admin dbname=postgres_server sslmode=disable")
-
-	db, err := sql.Open("postgres", connectionString)
-	CheckError("Error opening db:", err)
-	defer db.Close()
-
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS weather (id SERIAL PRIMARY KEY, city TEXT, temperature REAL )")
-	CheckError("Error creating table:", err)
-
-	// err = db.Ping()
-	// CheckError("ping error", err)
-	weatherData := getWeatherData("Kyiv")
-
-	_, err = db.Exec("INSERT INTO weather (city, temperature) VALUES ($1, $2)", weatherData.Name, weatherData.Main.Temp)
-	CheckError("Error inserting weather data:", err)
-	displayWeatherData(db)
-}
-
-func getWeatherData(city string) WeatherData {
+func GetWeatherData(city string) WeatherData {
 	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric", city, apiKey)
 	res, err := http.Get(url)
 	if err != nil {
@@ -62,9 +42,9 @@ func getWeatherData(city string) WeatherData {
 	return weatherData
 }
 
-func displayWeatherData(db *sql.DB) {
+func DisplayWeatherData(db *sql.DB) {
 	rows, err := db.Query("SELECT city, temperature FROM weather")
-	CheckError("Error querying from weather data:", err)
+	utils.CheckError("Error querying from weather data:", err)
 	defer rows.Close()
 
 	for rows.Next() {
@@ -77,11 +57,5 @@ func displayWeatherData(db *sql.DB) {
 			continue
 		}
 		fmt.Printf("%s: %.2f°C\n", city, temperature)
-	}
-}
-
-func CheckError(description string, err error) {
-	if err != nil {
-		panic(err)
 	}
 }
