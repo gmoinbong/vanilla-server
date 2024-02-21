@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"vanilla-server/utils"
 )
 
 const apiKey = "f9f996577eb403333e3a10667f6b862c"
+const units = "metric"
 
 type WeatherData struct {
 	Main struct {
@@ -19,7 +19,9 @@ type WeatherData struct {
 }
 
 func GetWeatherData(city string) WeatherData {
-	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=metric", city, apiKey)
+	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=%s",
+		city, apiKey, units)
+
 	res, err := http.Get(url)
 	if err != nil {
 		fmt.Println("error fetching weather data:", err)
@@ -33,18 +35,23 @@ func GetWeatherData(city string) WeatherData {
 	}
 
 	var weatherData WeatherData
+
 	err = json.Unmarshal(body, &weatherData)
+
 	if err != nil {
 		fmt.Println("error unmarshaling weather data:", err)
 		return WeatherData{}
 	}
 	fmt.Printf("The current temperature in %s is %.2f°C\n", weatherData.Name, weatherData.Main.Temp)
 	return weatherData
+
 }
 
 func DisplayWeatherData(db *sql.DB) {
 	rows, err := db.Query("SELECT city, temperature FROM weather")
-	utils.CheckError("Error querying from weather data:", err)
+	if err != nil {
+		fmt.Println("Error querying from weather data:", err)
+	}
 	defer rows.Close()
 
 	for rows.Next() {
