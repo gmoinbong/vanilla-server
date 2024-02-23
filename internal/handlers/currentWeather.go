@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"vanilla-server/utils"
 )
 
 const apiKey = "f9f996577eb403333e3a10667f6b862c"
@@ -18,20 +19,25 @@ type WeatherData struct {
 	Name string `json:"name"`
 }
 
-func GetWeatherData(city string) WeatherData {
+func GetCurrentWeatherData() (WeatherData, error) {
+	city, err := utils.CityInputReader()
+
+	if err != nil {
+		return WeatherData{}, fmt.Errorf("error reading city input :%v", err)
+	}
+
 	url := fmt.Sprintf("http://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=%s",
 		city, apiKey, units)
 
 	res, err := http.Get(url)
 	if err != nil {
-		fmt.Println("error fetching weather data:", err)
+		return WeatherData{}, fmt.Errorf("error fetching weather data: %v", err)
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println("error reading response body", err)
-		return WeatherData{}
+		return WeatherData{}, fmt.Errorf("error reading response body: %v", err)
 	}
 
 	var weatherData WeatherData
@@ -39,11 +45,21 @@ func GetWeatherData(city string) WeatherData {
 	err = json.Unmarshal(body, &weatherData)
 
 	if err != nil {
-		fmt.Println("error unmarshaling weather data:", err)
-		return WeatherData{}
+		return WeatherData{}, fmt.Errorf("error unmarshaling weather data: %v", err)
 	}
 	fmt.Printf("The current temperature in %s is %.2f°C\n", weatherData.Name, weatherData.Main.Temp)
-	return weatherData
+	return weatherData, nil
+
+}
+func CurrentWeatherDataHandler(w http.ResponseWriter, r *http.Request) {
+	weatherData, err := GetCurrentWeatherData()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error getting weather data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(weatherData)
 
 }
 

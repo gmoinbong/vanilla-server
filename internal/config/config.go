@@ -23,12 +23,10 @@ type HTTPServer struct {
 }
 
 type Storage struct {
-	DBName      string `yaml:"DBName"`
-	DBUser      string `yaml:"DBUser"`
-	DBPassword  string `yaml:"DBPassword"`
-	DBHost      string `yaml:"DBHost"`
-	DBPort      string `yaml:"DBPort"`
-	StoragePath string `yaml:"storage_path"`
+	DBName     int    `yaml:"DBName"`
+	DBPassword string `yaml:"DBPassword"`
+	DBHost     string `yaml:"DBHost"`
+	DBPort     string `yaml:"DBPort"`
 }
 
 func MustLoadConfig() *Config {

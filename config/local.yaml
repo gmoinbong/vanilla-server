@@ -6,9 +6,7 @@ http_server:
   user: "admin"
   password: "adminn"
 storage:
-  DBName: "postgres_server"
-  DBUser: "admin"
-  DBPassword: "admin"
+  DBName: 0
+  DBPassword: ""
   DBHost: "localhost"
-  DBPort: "5432"
-  storage_path: "./storage/storage.db"
+  DBPort: "6379"

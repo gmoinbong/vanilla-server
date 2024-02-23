@@ -26,7 +26,7 @@ cd /home/vladyslav/Documents/web-projects/vanilla-server/docker #Paste docker di
 
 # Run Docker Compose 
 
-docker-compose up -d
+# docker-compose up -d
 
 
 # Run Golang app

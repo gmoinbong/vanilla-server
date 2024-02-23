@@ -1,30 +1,28 @@
 package storage
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+	"log"
 	"vanilla-server/internal/config"
+
+	"github.com/redis/go-redis/v9"
 )
 
-func InitDB(cfg *config.Config) (*sql.DB, error) {
-	fmt.Println("dbname", cfg.DBName)
-	connectionString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable", cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBUser, cfg.DBPassword)
-	fmt.Println(connectionString)
-	db, err := sql.Open("postgres", connectionString)
+var ctx = context.Background()
+
+func InitDB(cfg *config.Config) (*redis.Client, error) {
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", cfg.DBHost, cfg.DBPort),
+		Password: cfg.DBPassword,
+		DB:       cfg.DBName,
+	})
+
+	status, err := rdb.Ping(ctx).Result()
 	if err != nil {
-		return nil, err
+		log.Fatalln("Redis connection was refused")
 	}
-
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS weather (id SERIAL PRIMARY KEY, city TEXT, temperature REAL )")
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-
+	fmt.Println(status)
+	return rdb, nil
 }
